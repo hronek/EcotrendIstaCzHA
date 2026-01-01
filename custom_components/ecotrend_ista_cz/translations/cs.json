@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ista EcoTrend CZ",
+        "description": "Nastavte panel ista EcoTrend CZ pro zobrazení dat o spotřebě.",
+        "data": {
+          "url": "URL adresa",
+          "panel_title": "Název panelu",
+          "panel_icon": "Ikona panelu"
+        },
+        "data_description": {
+          "url": "URL adresa webu ista EcoTrend CZ",
+          "panel_title": "Název zobrazený v postranním menu",
+          "panel_icon": "Ikona v postranním menu (např. mdi:water-thermometer)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "ista EcoTrend CZ je již nakonfigurován."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Nastavení ista EcoTrend CZ",
+        "data": {
+          "url": "URL adresa",
+          "panel_title": "Název panelu",
+          "panel_icon": "Ikona panelu"
+        }
+      }
+    }
+  }
+}

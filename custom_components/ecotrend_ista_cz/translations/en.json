@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ista EcoTrend CZ",
+        "description": "Set up ista EcoTrend CZ panel to view your consumption data.",
+        "data": {
+          "url": "URL",
+          "panel_title": "Panel Title",
+          "panel_icon": "Panel Icon"
+        },
+        "data_description": {
+          "url": "The URL to the ista EcoTrend CZ website",
+          "panel_title": "The title shown in the sidebar",
+          "panel_icon": "The icon shown in the sidebar (e.g., mdi:water-thermometer)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "ista EcoTrend CZ is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ista EcoTrend CZ Options",
+        "data": {
+          "url": "URL",
+          "panel_title": "Panel Title",
+          "panel_icon": "Panel Icon"
+        }
+      }
+    }
+  }
+}
