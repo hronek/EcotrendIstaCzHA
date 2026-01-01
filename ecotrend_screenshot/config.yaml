@@ -1,0 +1,24 @@
+name: "EcoTrend Screenshot"
+description: "Headless browser addon for capturing ista EcoTrend screenshots"
+version: "1.0.0"
+slug: "ecotrend_screenshot"
+init: false
+arch:
+  - amd64
+  - aarch64
+  - armv7
+  - armhf
+  - i386
+homeassistant_api: true
+map:
+  - media:rw
+  - config:rw
+ports:
+  5000/tcp: 5000
+ports_description:
+  5000/tcp: "Screenshot API"
+options:
+  log_level: info
+schema:
+  log_level: str
+startup: application
