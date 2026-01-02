@@ -184,7 +184,7 @@ class EcotrendCamera(Camera):
                 dark_mode = self._theme == "dark"
 
             # Make request to addon
-            url = f"http://{self._addon_host}:{self._addon_port}/screenshot"
+            url = f"http://{self._addon_host}:{int(self._addon_port)}/screenshot"
             payload = {
                 "username": self._username,
                 "password": self._password,

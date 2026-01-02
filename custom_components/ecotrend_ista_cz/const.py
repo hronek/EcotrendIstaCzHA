@@ -5,7 +5,7 @@ DOMAIN = "ecotrend_ista_cz"
 # Default values
 DEFAULT_URL = "https://ecotrend.ista.cz/"
 DEFAULT_NAME = "ista EcoTrend CZ"
-DEFAULT_ADDON_HOST = "172.30.33.4"
+DEFAULT_ADDON_HOST = "localhost"
 DEFAULT_ADDON_PORT = 5000
 DEFAULT_UPDATE_INTERVAL = 1440  # minutes (24 hours)
 DEFAULT_UPDATE_TIME = "00:00"

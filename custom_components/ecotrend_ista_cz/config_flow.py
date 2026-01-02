@@ -61,7 +61,7 @@ async def validate_addon_connection(host: str, port: int) -> bool:
     """Validate connection to the screenshot addon."""
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"http://{host}:{port}/health"
+            url = f"http://{host}:{int(port)}/health"
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as response:
                 return response.status == 200
     except Exception as e:
@@ -114,7 +114,7 @@ class EcotrendIstaCzConfigFlow(ConfigFlow, domain=DOMAIN):
                         TextSelectorConfig(type=TextSelectorType.TEXT)
                     ),
                     vol.Optional(CONF_ADDON_PORT, default=DEFAULT_ADDON_PORT): NumberSelector(
-                        NumberSelectorConfig(min=1, max=65535, mode=NumberSelectorMode.BOX)
+                        NumberSelectorConfig(min=1, max=65535, step=1, mode=NumberSelectorMode.BOX)
                     ),
                     vol.Optional(CONF_PANEL_TITLE, default=DEFAULT_NAME): TextSelector(
                         TextSelectorConfig(type=TextSelectorType.TEXT)
@@ -289,7 +289,7 @@ class EcotrendIstaCzOptionsFlow(OptionsFlow):
                     vol.Optional(
                         CONF_ADDON_PORT,
                         default=self.config_entry.data.get(CONF_ADDON_PORT, DEFAULT_ADDON_PORT),
-                    ): NumberSelector(NumberSelectorConfig(min=1, max=65535, mode=NumberSelectorMode.BOX)),
+                    ): NumberSelector(NumberSelectorConfig(min=1, max=65535, step=1, mode=NumberSelectorMode.BOX)),
                     vol.Optional(
                         CONF_PANEL_TITLE,
                         default=self.config_entry.data.get(CONF_PANEL_TITLE, DEFAULT_NAME),
