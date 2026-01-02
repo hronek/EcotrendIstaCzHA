@@ -145,8 +145,8 @@ class EcotrendCamera(Camera):
             except ValueError:
                 _LOGGER.error("Invalid update time format: %s", self._update_time)
 
-        # Initial update
-        self.hass.async_create_task(self._async_update_image())
+        # Initial update - load screenshot immediately
+        await self._async_update_image()
 
     async def async_will_remove_from_hass(self) -> None:
         """Run when entity will be removed from hass."""
@@ -265,7 +265,7 @@ class EcotrendCamera(Camera):
             "name": "ista EcoTrend CZ",
             "manufacturer": "ista",
             "model": "EcoTrend CZ",
-            "sw_version": "2.0.0",
+            "sw_version": "3.0.0",
         }
 
     async def async_update(self) -> None:

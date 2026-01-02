@@ -3,12 +3,11 @@
     "step": {
       "user": {
         "title": "ista EcoTrend CZ - Přihlašovací údaje",
-        "description": "Zadejte přihlašovací údaje k ista EcoTrend a nastavení addonu.\n\nUjistěte se, že addon EcoTrend Screenshot je nainstalován a běží.",
+        "description": "Zadejte přihlašovací údaje k ista EcoTrend.\n\nUjistěte se, že addon EcoTrend Screenshot je nainstalován a běží. Addon bude nalezen automaticky.",
         "data": {
           "username": "Uživatelské jméno (ista EcoTrend)",
           "password": "Heslo",
-          "addon_host": "Host screenshot addonu",
-          "addon_port": "Port screenshot addonu",
+          "addon_port": "Port screenshot addonu (pokročilé)",
           "panel_title": "Název panelu v postranním menu",
           "panel_icon": "Ikona panelu v postranním menu"
         }
@@ -34,6 +33,8 @@
       }
     },
     "error": {
+      "addon_not_found": "Addon EcoTrend Screenshot nebyl nalezen. Nejprve jej nainstalujte z obchodu s doplňky.",
+      "addon_not_running": "Addon EcoTrend Screenshot neběží. Spusťte addon a zkuste to znovu.",
       "addon_not_available": "Nelze se připojit k addonu EcoTrend Screenshot. Ujistěte se, že je nainstalován a běží.",
       "invalid_comparison": "Neplatný typ porovnání pro vybraný typ dat. Studená voda podporuje pouze porovnání 'Minulý rok'."
     },
@@ -56,8 +57,7 @@
         "data": {
           "username": "Uživatelské jméno (ista EcoTrend)",
           "password": "Heslo",
-          "addon_host": "Host screenshot addonu",
-          "addon_port": "Port screenshot addonu",
+          "addon_port": "Port screenshot addonu (pokročilé)",
           "panel_title": "Název panelu v postranním menu",
           "panel_icon": "Ikona panelu v postranním menu"
         }

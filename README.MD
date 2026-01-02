@@ -59,19 +59,22 @@ Tato integrace vyžaduje addon **EcoTrend Screenshot**, který pořizuje screens
 5. Zadejte přihlašovací údaje k ista EcoTrend:
    - **Uživatelské jméno**: Vaše přihlašovací jméno k ista EcoTrend
    - **Heslo**: Vaše heslo k ista EcoTrend
-   - **Host addonu**: localhost (výchozí)
-   - **Port addonu**: 5000 (výchozí)
+   - **Port addonu**: 5000 (výchozí, volitelné - pokročilé)
    - **Název panelu**: Název v postranním menu
    - **Ikona**: MDI ikona (výchozí: mdi:water-thermometer)
+
+   *Poznámka: IP adresa addonu se zjišťuje automaticky přes Supervisor API. Nemusíte ji zadávat ručně.*
+
 6. Klikněte na **Next**
 7. Nakonfigurujte první kameru (graf):
-   - **Typ dat**: Teplo / Teplá voda / Studená voda
-   - **Interval**: Dny / Týdny / Měsíce / Roky
-   - **Porovnání**: Objekt / Minulý rok
+   - **Typ dat**: Teplo / Teplá voda / Studená voda *(povinné)*
+   - **Interval**: Dny / Týdny / Měsíce / Roky *(volitelné, výchozí: Měsíce)*
+   - **Porovnání**: Objekt / Minulý rok *(volitelné, výchozí: Minulý rok)*
    - **Téma**: Automaticky (dle HA) / Tmavé / Světlé
    - **Interval aktualizace**: Počet minut mezi aktualizacemi (výchozí: 1440 = 24h)
    - **Čas aktualizace**: Denní čas pro aktualizaci (výchozí: 00:00)
-8. Opakujte pro další kamery, nebo dokončete konfiguraci
+8. Screenshot se načte okamžitě po konfiguraci
+9. Opakujte pro další kamery, nebo dokončete konfiguraci
 
 ## Použití
 
@@ -131,6 +134,24 @@ Každá camera entita obsahuje tyto atributy:
 - `update_interval_minutes`: Interval aktualizace v minutách
 - `scheduled_update_time`: Čas plánované denní aktualizace
 
+## Manuální aktualizace screenshotu
+
+Pokud chcete screenshot aktualizovat okamžitě (mimo plánovaný čas), můžete použít službu:
+
+**Developer Tools → Services:**
+```yaml
+service: ecotrend_ista_cz.refresh_screenshot
+data:
+  entity_id: camera.ecotrend_teplo_mesice_minuly_rok_0
+```
+
+Nebo v automatizaci:
+```yaml
+service: ecotrend_ista_cz.refresh_screenshot
+target:
+  entity_id: camera.ecotrend_teplo_mesice_minuly_rok_0
+```
+
 ## Známá omezení
 
 - **Studená voda**: Podporuje pouze porovnání "Minulý rok" (ne "Objekt")
@@ -139,17 +160,25 @@ Každá camera entita obsahuje tyto atributy:
 
 ## Řešení problémů
 
+### Addon nebyl nalezen během konfigurace
+- Ujistěte se, že addon **EcoTrend Screenshot** je nainstalovaný
+- Zkontrolujte, že addon je spuštěný (zelená ikona v Add-ons)
+- Integrace automaticky najde addon přes Supervisor API
+
 ### Addon se nepřipojuje
 - Zkontrolujte, že addon EcoTrend Screenshot běží
 - Zkontrolujte logy addonu v **Settings** → **Add-ons** → **EcoTrend Screenshot** → **Log**
+- IP adresa addonu se zjišťuje automaticky, není třeba ji zadávat ručně
 
 ### Screenshoty se neaktualizují
 - Zkontrolujte přihlašovací údaje k ista EcoTrend
 - Zkontrolujte logy Home Assistant pro chyby
+- Zkuste manuální aktualizaci přes službu `ecotrend_ista_cz.refresh_screenshot`
 
 ### Prázdný screenshot
 - Webová stránka ista EcoTrend může být dočasně nedostupná
-- Zkuste ruční aktualizaci přes Developer Tools → Services → `homeassistant.update_entity`
+- Zkuste ruční aktualizaci přes službu `ecotrend_ista_cz.refresh_screenshot`
+- První screenshot po instalaci se načítá okamžitě, ale může trvat déle (Unity WebGL)
 
 ## Podpora
 
@@ -160,6 +189,15 @@ Pokud narazíte na problémy, vytvořte [issue na GitHubu](https://github.com/hr
 MIT License
 
 ## Changelog
+
+### v3.0.0
+- **Nové**: Automatické zjišťování addon IP přes Supervisor API
+- **Vylepšení**: Interval a porovnání jsou nyní volitelné (výchozí: Měsíce, Minulý rok)
+- **Vylepšení**: Screenshot se načítá okamžitě po konfiguraci kamery
+- **Nové**: Služba `ecotrend_ista_cz.refresh_screenshot` pro manuální aktualizaci
+- **Vylepšení**: Lepší chybové hlášky při konfiguraci (addon nenalezen, neběží)
+- **Oprava**: Odstraněno ruční zadávání IP adresy addonu
+- **Optimalizace**: Přidány paměťové optimalizace pro Chromium na Raspberry Pi
 
 ### v2.0.0
 - **Nové**: Camera entity se screenshoty grafů

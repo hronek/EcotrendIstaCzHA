@@ -1,0 +1,15 @@
+refresh_screenshot:
+  name: Refresh Screenshot
+  description: Manually refresh the screenshot for an EcoTrend camera entity.
+  target:
+    entity:
+      domain: camera
+  fields:
+    entity_id:
+      name: Entity
+      description: The camera entity to refresh.
+      required: true
+      example: "camera.ecotrend_teplo_mesice_minuly_rok"
+      selector:
+        entity:
+          domain: camera

@@ -6,7 +6,8 @@ from datetime import timedelta
 
 from homeassistant.components.frontend import async_register_built_in_panel
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import entity_platform
 
 from .const import (
     CONF_PANEL_ICON,
@@ -20,6 +21,8 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+SERVICE_REFRESH_SCREENSHOT = "refresh_screenshot"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -49,6 +52,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Set up platforms (camera)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Register service for manual screenshot refresh
+    async def handle_refresh_screenshot(call: ServiceCall) -> None:
+        """Handle the refresh_screenshot service call."""
+        entity_id = call.data.get("entity_id")
+
+        if not entity_id:
+            _LOGGER.error("No entity_id provided for refresh_screenshot service")
+            return
+
+        # Get the camera entity
+        entity_registry = hass.helpers.entity_registry.async_get(hass)
+        entity_entry = entity_registry.async_get(entity_id)
+
+        if not entity_entry or entity_entry.platform != DOMAIN:
+            _LOGGER.error("Entity %s not found or not an EcoTrend camera", entity_id)
+            return
+
+        # Get the entity object
+        component = hass.data.get("entity_components", {}).get("camera")
+        if component:
+            entity = component.get_entity(entity_id)
+            if entity and hasattr(entity, "_async_update_image"):
+                _LOGGER.info("Refreshing screenshot for %s", entity_id)
+                await entity._async_update_image()
+            else:
+                _LOGGER.error("Entity %s does not support refresh", entity_id)
+        else:
+            _LOGGER.error("Camera component not found")
+
+    hass.services.async_register(DOMAIN, SERVICE_REFRESH_SCREENSHOT, handle_refresh_screenshot)
+
     # Register update listener for options
     entry.async_on_unload(entry.add_update_listener(async_update_options))
 
@@ -66,6 +100,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
+        # Remove service
+        hass.services.async_remove(DOMAIN, SERVICE_REFRESH_SCREENSHOT)
+
         # Remove the panel
         try:
             hass.components.frontend.async_remove_panel(DOMAIN)

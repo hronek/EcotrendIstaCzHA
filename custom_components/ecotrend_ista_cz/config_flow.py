@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 import aiohttp
@@ -57,6 +58,53 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+async def get_addon_info() -> dict[str, Any] | None:
+    """Get EcoTrend Screenshot addon info from Supervisor."""
+    try:
+        supervisor_token = os.environ.get("SUPERVISOR_TOKEN")
+        if not supervisor_token:
+            _LOGGER.warning("SUPERVISOR_TOKEN not available")
+            return None
+
+        async with aiohttp.ClientSession() as session:
+            headers = {"Authorization": f"Bearer {supervisor_token}"}
+
+            # Get list of all addons
+            url = "http://supervisor/addons"
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status != 200:
+                    _LOGGER.error("Failed to get addons list: %s", response.status)
+                    return None
+
+                data = await response.json()
+                addons = data.get("data", {}).get("addons", [])
+
+                # Find EcoTrend Screenshot addon
+                for addon in addons:
+                    if addon.get("name") == "EcoTrend Screenshot":
+                        slug = addon.get("slug")
+                        _LOGGER.info("Found EcoTrend Screenshot addon: %s", slug)
+
+                        # Get detailed addon info
+                        info_url = f"http://supervisor/addons/{slug}/info"
+                        async with session.get(info_url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as info_response:
+                            if info_response.status == 200:
+                                info_data = await info_response.json()
+                                addon_data = info_data.get("data", {})
+                                return {
+                                    "ip_address": addon_data.get("ip_address"),
+                                    "slug": slug,
+                                    "state": addon_data.get("state"),
+                                }
+
+                _LOGGER.warning("EcoTrend Screenshot addon not found")
+                return None
+
+    except Exception as e:
+        _LOGGER.exception("Failed to get addon info: %s", e)
+        return None
+
+
 async def validate_addon_connection(host: str, port: int) -> bool:
     """Validate connection to the screenshot addon."""
     try:
@@ -82,7 +130,7 @@ class EcotrendIstaCzConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step - credentials and addon settings."""
+        """Handle the initial step - credentials."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -90,15 +138,25 @@ class EcotrendIstaCzConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(DOMAIN)
             self._abort_if_unique_id_configured()
 
-            # Validate addon connection
-            addon_host = user_input.get(CONF_ADDON_HOST, DEFAULT_ADDON_HOST)
-            addon_port = user_input.get(CONF_ADDON_PORT, DEFAULT_ADDON_PORT)
-
-            if not await validate_addon_connection(addon_host, addon_port):
-                errors["base"] = "addon_not_available"
+            # Auto-discover addon
+            addon_info = await get_addon_info()
+            if not addon_info:
+                errors["base"] = "addon_not_found"
+            elif addon_info.get("state") != "started":
+                errors["base"] = "addon_not_running"
             else:
-                self._data = user_input
-                return await self.async_step_cameras()
+                # Get addon connection details
+                addon_host = addon_info.get("ip_address")
+                addon_port = user_input.get(CONF_ADDON_PORT, DEFAULT_ADDON_PORT)
+
+                # Validate connection
+                if not await validate_addon_connection(addon_host, addon_port):
+                    errors["base"] = "addon_not_available"
+                else:
+                    # Store addon IP in config
+                    user_input[CONF_ADDON_HOST] = addon_host
+                    self._data = user_input
+                    return await self.async_step_cameras()
 
         return self.async_show_form(
             step_id="user",
@@ -109,9 +167,6 @@ class EcotrendIstaCzConfigFlow(ConfigFlow, domain=DOMAIN):
                     ),
                     vol.Required(CONF_PASSWORD): TextSelector(
                         TextSelectorConfig(type=TextSelectorType.PASSWORD)
-                    ),
-                    vol.Optional(CONF_ADDON_HOST, default=DEFAULT_ADDON_HOST): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.TEXT)
                     ),
                     vol.Optional(CONF_ADDON_PORT, default=DEFAULT_ADDON_PORT): NumberSelector(
                         NumberSelectorConfig(min=1, max=65535, step=1, mode=NumberSelectorMode.BOX)
@@ -135,14 +190,14 @@ class EcotrendIstaCzConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             tab = user_input.get(CONF_TAB)
-            interval = user_input.get(CONF_INTERVAL)
-            comparison = user_input.get(CONF_COMPARISON)
+            interval = user_input.get(CONF_INTERVAL, "months")
+            comparison = user_input.get(CONF_COMPARISON, "last_year")
             theme = user_input.get(CONF_THEME, "auto")
             update_interval = user_input.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
             update_time = user_input.get(CONF_UPDATE_TIME, DEFAULT_UPDATE_TIME)
 
             # Validate comparison is valid for tab
-            if comparison not in VALID_COMPARISONS.get(tab, []):
+            if comparison and comparison not in VALID_COMPARISONS.get(tab, []):
                 errors["base"] = "invalid_comparison"
             else:
                 camera_config = {
@@ -174,13 +229,13 @@ class EcotrendIstaCzConfigFlow(ConfigFlow, domain=DOMAIN):
                             mode=SelectSelectorMode.DROPDOWN,
                         )
                     ),
-                    vol.Required(CONF_INTERVAL): SelectSelector(
+                    vol.Optional(CONF_INTERVAL, default="months"): SelectSelector(
                         SelectSelectorConfig(
                             options=[{"value": k, "label": v} for k, v in INTERVALS.items()],
                             mode=SelectSelectorMode.DROPDOWN,
                         )
                     ),
-                    vol.Required(CONF_COMPARISON): SelectSelector(
+                    vol.Optional(CONF_COMPARISON, default="last_year"): SelectSelector(
                         SelectSelectorConfig(
                             options=comparison_options,
                             mode=SelectSelectorMode.DROPDOWN,
