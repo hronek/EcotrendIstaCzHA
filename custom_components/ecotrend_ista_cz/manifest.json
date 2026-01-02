@@ -1,6 +1,6 @@
 {
   "domain": "ecotrend_ista_cz",
-  "name": "ista EcoTrend CZ",
+  "name": "Ista EcoTrend CZ",
   "codeowners": ["@hronek"],
   "config_flow": true,
   "documentation": "https://github.com/hronek/EcotrendIstaCzHA",

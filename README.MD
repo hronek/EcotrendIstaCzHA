@@ -1,10 +1,10 @@
-# ista EcoTrend CZ pro Home Assistant
+# Ista EcoTrend CZ pro Home Assistant
 
 Custom integrace pro Home Assistant, která zobrazuje data z [ecotrend.ista.cz](https://ecotrend.ista.cz/) jako panel v postranním menu a automaticky generované screenshoty grafů jako camera entity.
 
 ## Funkce
 
-- **Panel v postranním menu** - přímý přístup k webové stránce ista EcoTrend CZ
+- **Panel v postranním menu** - přímý přístup k webové stránce Ista EcoTrend CZ
 - **Camera entity se screenshoty grafů** - automatické pořizování screenshotů grafů spotřeby
 - **Volitelné kombinace grafů**:
   - **Teplo** - Dny, Týdny, Měsíce, Roky - Objekt, Minulý rok
@@ -15,9 +15,9 @@ Custom integrace pro Home Assistant, která zobrazuje data z [ecotrend.ista.cz](
 
 ## Požadavky
 
-### EcoTrend Screenshot Addon (povinné)
+### Ista EcoTrend CZ Screenshot Addon (povinné)
 
-Tato integrace vyžaduje addon **EcoTrend Screenshot**, který pořizuje screenshoty z webové stránky ista EcoTrend.
+Tato integrace vyžaduje addon **Ista EcoTrend CZ Screenshot**, který pořizuje screenshoty z webové stránky Ista EcoTrend.
 
 #### Instalace addonu:
 
@@ -26,7 +26,7 @@ Tato integrace vyžaduje addon **EcoTrend Screenshot**, který pořizuje screens
 3. Přidejte URL: `https://github.com/hronek/EcotrendIstaCzHA`
 4. Klikněte na **Add** a zavřete dialog
 5. Obnovte stránku (F5)
-6. Najděte **EcoTrend Screenshot** a klikněte na něj
+6. Najděte **Ista EcoTrend CZ Screenshot** a klikněte na něj
 7. Klikněte na **Install**
 8. Po instalaci klikněte na **Start**
 9. Zkontrolujte, že addon běží (zelená ikona)
@@ -41,7 +41,7 @@ Tato integrace vyžaduje addon **EcoTrend Screenshot**, který pořizuje screens
 4. Přidejte URL: `https://github.com/hronek/EcotrendIstaCzHA`
 5. Vyberte kategorii **Integration**
 6. Klikněte na **Add**
-7. Najděte **ista EcoTrend CZ** a klikněte na **Download**
+7. Najděte **Ista EcoTrend CZ** a klikněte na **Download**
 8. Restartujte Home Assistant
 
 ### Manuální instalace
@@ -52,13 +52,13 @@ Tato integrace vyžaduje addon **EcoTrend Screenshot**, který pořizuje screens
 
 ## Konfigurace
 
-1. Ujistěte se, že addon **EcoTrend Screenshot** je nainstalovaný a běží
+1. Ujistěte se, že addon **Ista EcoTrend CZ Screenshot** je nainstalovaný a běží
 2. Přejděte do **Settings** → **Devices & Services**
 3. Klikněte na **Add Integration**
-4. Vyhledejte **ista EcoTrend CZ**
-5. Zadejte přihlašovací údaje k ista EcoTrend:
-   - **Uživatelské jméno**: Vaše přihlašovací jméno k ista EcoTrend
-   - **Heslo**: Vaše heslo k ista EcoTrend
+4. Vyhledejte **Ista EcoTrend CZ**
+5. Zadejte přihlašovací údaje k Ista EcoTrend:
+   - **Uživatelské jméno**: Vaše přihlašovací jméno k Ista EcoTrend
+   - **Heslo**: Vaše heslo k Ista EcoTrend
    - **Port addonu**: 5000 (výchozí, volitelné - pokročilé)
    - **Název panelu**: Název v postranním menu
    - **Ikona**: MDI ikona (výchozí: mdi:water-thermometer)
@@ -80,7 +80,7 @@ Tato integrace vyžaduje addon **EcoTrend Screenshot**, který pořizuje screens
 
 ### Panel v postranním menu
 
-Po konfiguraci se v postranním menu Home Assistant objeví nová položka "ista EcoTrend CZ". Kliknutím se otevře webová stránka pro ruční prohlížení.
+Po konfiguraci se v postranním menu Home Assistant objeví nová položka "Ista EcoTrend CZ". Kliknutím se otevře webová stránka pro ruční prohlížení.
 
 ### Camera entity v Lovelace
 
@@ -121,7 +121,7 @@ V nastavení integrace můžete:
 - **Odebrat existující kamery**
 - **Přidat nové kamery**
 
-Přejděte do **Settings** → **Devices & Services** → **ista EcoTrend CZ** → **Configure**
+Přejděte do **Settings** → **Devices & Services** → **Ista EcoTrend CZ** → **Configure**
 
 ## Atributy camera entity
 
@@ -156,27 +156,27 @@ target:
 
 - **Studená voda**: Podporuje pouze porovnání "Minulý rok" (ne "Objekt")
 - **První screenshot**: První screenshot může trvat déle (načítání Unity WebGL)
-- **Přihlášení**: Pokud se změní heslo k ista EcoTrend, je třeba aktualizovat v nastavení integrace
+- **Přihlášení**: Pokud se změní heslo k Ista EcoTrend, je třeba aktualizovat v nastavení integrace
 
 ## Řešení problémů
 
 ### Addon nebyl nalezen během konfigurace
-- Ujistěte se, že addon **EcoTrend Screenshot** je nainstalovaný
+- Ujistěte se, že addon **Ista EcoTrend CZ Screenshot** je nainstalovaný
 - Zkontrolujte, že addon je spuštěný (zelená ikona v Add-ons)
 - Integrace automaticky najde addon přes Supervisor API
 
 ### Addon se nepřipojuje
-- Zkontrolujte, že addon EcoTrend Screenshot běží
-- Zkontrolujte logy addonu v **Settings** → **Add-ons** → **EcoTrend Screenshot** → **Log**
+- Zkontrolujte, že addon Ista EcoTrend CZ Screenshot běží
+- Zkontrolujte logy addonu v **Settings** → **Add-ons** → **Ista EcoTrend CZ Screenshot** → **Log**
 - IP adresa addonu se zjišťuje automaticky, není třeba ji zadávat ručně
 
 ### Screenshoty se neaktualizují
-- Zkontrolujte přihlašovací údaje k ista EcoTrend
+- Zkontrolujte přihlašovací údaje k Ista EcoTrend
 - Zkontrolujte logy Home Assistant pro chyby
 - Zkuste manuální aktualizaci přes službu `ecotrend_ista_cz.refresh_screenshot`
 
 ### Prázdný screenshot
-- Webová stránka ista EcoTrend může být dočasně nedostupná
+- Webová stránka Ista EcoTrend může být dočasně nedostupná
 - Zkuste ruční aktualizaci přes službu `ecotrend_ista_cz.refresh_screenshot`
 - První screenshot po instalaci se načítá okamžitě, ale může trvat déle (Unity WebGL)
 
@@ -201,7 +201,7 @@ MIT License
 
 ### v2.0.0
 - **Nové**: Camera entity se screenshoty grafů
-- **Nové**: Addon EcoTrend Screenshot pro automatické pořizování screenshotů
+- **Nové**: Addon Ista EcoTrend CZ Screenshot pro automatické pořizování screenshotů
 - **Nové**: Konfigurovatelné kombinace grafů (typ dat, interval, porovnání)
 - **Nové**: Volba tmavého/světlého tématu
 - **Nové**: Konfigurovatelný čas a interval aktualizace

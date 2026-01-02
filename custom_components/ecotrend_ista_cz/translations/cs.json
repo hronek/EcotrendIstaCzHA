@@ -2,10 +2,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "ista EcoTrend CZ - Přihlašovací údaje",
-        "description": "Zadejte přihlašovací údaje k ista EcoTrend.\n\nUjistěte se, že addon EcoTrend Screenshot je nainstalován a běží. Addon bude nalezen automaticky.",
+        "title": "Ista EcoTrend CZ - Přihlašovací údaje",
+        "description": "Zadejte přihlašovací údaje k Ista EcoTrend.\n\nUjistěte se, že addon Ista EcoTrend CZ Screenshot je nainstalován a běží. Addon bude nalezen automaticky.",
         "data": {
-          "username": "Uživatelské jméno (ista EcoTrend)",
+          "username": "Uživatelské jméno (Ista EcoTrend)",
           "password": "Heslo",
           "addon_port": "Port screenshot addonu (pokročilé)",
           "panel_title": "Název panelu v postranním menu",
@@ -33,9 +33,9 @@
       }
     },
     "error": {
-      "addon_not_found": "Addon EcoTrend Screenshot nebyl nalezen. Nejprve jej nainstalujte z obchodu s doplňky.",
-      "addon_not_running": "Addon EcoTrend Screenshot neběží. Spusťte addon a zkuste to znovu.",
-      "addon_not_available": "Nelze se připojit k addonu EcoTrend Screenshot. Ujistěte se, že je nainstalován a běží.",
+      "addon_not_found": "Addon Ista EcoTrend CZ Screenshot nebyl nalezen. Nejprve jej nainstalujte z obchodu s doplňky.",
+      "addon_not_running": "Addon Ista EcoTrend CZ Screenshot neběží. Spusťte addon a zkuste to znovu.",
+      "addon_not_available": "Nelze se připojit k addonu Ista EcoTrend CZ Screenshot. Ujistěte se, že je nainstalován a běží.",
       "invalid_comparison": "Neplatný typ porovnání pro vybraný typ dat. Studená voda podporuje pouze porovnání 'Minulý rok'."
     },
     "abort": {
@@ -45,7 +45,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "ista EcoTrend CZ - Možnosti",
+        "title": "Ista EcoTrend CZ - Možnosti",
         "menu_options": {
           "credentials": "Upravit přihlašovací údaje",
           "cameras": "Odebrat kamery",
@@ -55,7 +55,7 @@
       "credentials": {
         "title": "Upravit přihlašovací údaje",
         "data": {
-          "username": "Uživatelské jméno (ista EcoTrend)",
+          "username": "Uživatelské jméno (Ista EcoTrend)",
           "password": "Heslo",
           "addon_port": "Port screenshot addonu (pokročilé)",
           "panel_title": "Název panelu v postranním menu",

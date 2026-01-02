@@ -79,11 +79,11 @@ async def get_addon_info() -> dict[str, Any] | None:
                 data = await response.json()
                 addons = data.get("data", {}).get("addons", [])
 
-                # Find EcoTrend Screenshot addon
+                # Find Ista EcoTrend CZ Screenshot addon
                 for addon in addons:
-                    if addon.get("name") == "EcoTrend Screenshot":
+                    if addon.get("name") == "Ista EcoTrend CZ Screenshot":
                         slug = addon.get("slug")
-                        _LOGGER.info("Found EcoTrend Screenshot addon: %s", slug)
+                        _LOGGER.info("Found Ista EcoTrend CZ Screenshot addon: %s", slug)
 
                         # Get detailed addon info
                         info_url = f"http://supervisor/addons/{slug}/info"

@@ -262,8 +262,8 @@ class EcotrendCamera(Camera):
         """Return device information."""
         return {
             "identifiers": {(DOMAIN, self._entry.entry_id)},
-            "name": "ista EcoTrend CZ",
-            "manufacturer": "ista",
+            "name": "Ista EcoTrend CZ",
+            "manufacturer": "Ista",
             "model": "EcoTrend CZ",
             "sw_version": "3.0.0",
         }

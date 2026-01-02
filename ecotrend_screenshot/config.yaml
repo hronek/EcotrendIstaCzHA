@@ -1,5 +1,5 @@
-name: "EcoTrend Screenshot"
-description: "Headless browser addon for capturing ista EcoTrend screenshots"
+name: "Ista EcoTrend CZ Screenshot"
+description: "Headless browser addon for capturing Ista EcoTrend screenshots"
 version: "1.0.0"
 slug: "ecotrend_screenshot"
 init: false

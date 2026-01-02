@@ -45,7 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             config={"url": url},
             require_admin=False,
         )
-        _LOGGER.info("ista EcoTrend CZ panel registered: %s", url)
+        _LOGGER.info("Ista EcoTrend CZ panel registered: %s", url)
     except Exception as e:
         _LOGGER.warning("Could not register panel (may already exist): %s", e)
 
@@ -111,6 +111,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         hass.data[DOMAIN].pop(entry.entry_id, None)
 
-        _LOGGER.info("ista EcoTrend CZ integration unloaded")
+        _LOGGER.info("Ista EcoTrend CZ integration unloaded")
 
     return unload_ok
