@@ -65,6 +65,22 @@ def get_chrome_driver(dark_mode: bool = False) -> webdriver.Chrome:
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-infobars")
+
+    # Memory optimizations for low RAM systems (RPi)
+    options.add_argument("--single-process")
+    options.add_argument("--no-zygote")
+    options.add_argument("--disable-software-rasterizer")
+    options.add_argument("--disable-plugins")
+    options.add_argument("--js-flags=--max-old-space-size=128")
+    options.add_argument("--renderer-process-limit=1")
+    options.add_argument("--disable-background-networking")
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--disable-sync")
+    options.add_argument("--disable-translate")
+    options.add_argument("--mute-audio")
+    options.add_argument("--no-first-run")
+    options.add_argument("--safebrowsing-disable-auto-update")
+
     options.binary_location = "/usr/bin/chromium-browser"
 
     if dark_mode:
