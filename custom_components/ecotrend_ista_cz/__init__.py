@@ -1,13 +1,11 @@
-"""The ista EcoTrend CZ integration."""
+"""The Ista EcoTrend CZ integration."""
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 
 from homeassistant.components.frontend import async_register_built_in_panel
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import entity_platform
 
 from .const import (
     CONF_PANEL_ICON,
@@ -26,9 +24,10 @@ SERVICE_REFRESH_SCREENSHOT = "refresh_screenshot"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up ista EcoTrend CZ from a config entry."""
+    """Set up Ista EcoTrend CZ from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
+    hass.data[DOMAIN].setdefault("entities", {})
 
     url = entry.data.get(CONF_URL, DEFAULT_URL)
     title = entry.data.get(CONF_PANEL_TITLE, DEFAULT_NAME)
@@ -61,25 +60,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.error("No entity_id provided for refresh_screenshot service")
             return
 
-        # Get the camera entity
-        entity_registry = hass.helpers.entity_registry.async_get(hass)
-        entity_entry = entity_registry.async_get(entity_id)
+        # Get the camera entity from our stored references
+        entities = hass.data.get(DOMAIN, {}).get("entities", {})
+        entity = entities.get(entity_id)
 
-        if not entity_entry or entity_entry.platform != DOMAIN:
-            _LOGGER.error("Entity %s not found or not an EcoTrend camera", entity_id)
-            return
-
-        # Get the entity object
-        component = hass.data.get("entity_components", {}).get("camera")
-        if component:
-            entity = component.get_entity(entity_id)
-            if entity and hasattr(entity, "_async_update_image"):
-                _LOGGER.info("Refreshing screenshot for %s", entity_id)
+        if entity and hasattr(entity, "_async_update_image"):
+            _LOGGER.info("Refreshing screenshot for %s", entity_id)
+            try:
                 await entity._async_update_image()
-            else:
-                _LOGGER.error("Entity %s does not support refresh", entity_id)
+                _LOGGER.info("Screenshot refresh completed for %s", entity_id)
+            except Exception as e:
+                _LOGGER.error("Failed to refresh screenshot for %s: %s", entity_id, e)
         else:
-            _LOGGER.error("Camera component not found")
+            _LOGGER.error("Entity %s not found or does not support refresh. Available: %s", entity_id, list(entities.keys()))
 
     hass.services.async_register(DOMAIN, SERVICE_REFRESH_SCREENSHOT, handle_refresh_screenshot)
 

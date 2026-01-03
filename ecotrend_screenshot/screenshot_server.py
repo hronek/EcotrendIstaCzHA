@@ -2,17 +2,19 @@
 """EcoTrend Screenshot Server - captures screenshots from ista EcoTrend."""
 
 import base64
+import gc
 import io
 import json
 import logging
 import os
+import subprocess
 import time
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 from flask import Flask, jsonify, request, send_file
-from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -24,6 +26,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 ECOTREND_URL = "https://ecotrend.ista.cz/"
 SCREENSHOT_DIR = Path("/media/ecotrend_screenshots")
 CONFIG_DIR = Path("/config")
+
+# Global lock - only one screenshot at a time!
+screenshot_lock = threading.Lock()
 
 # Logging setup
 log_level = os.environ.get("LOG_LEVEL", "info").upper()
@@ -55,31 +60,79 @@ COMPARISON_MAPPING = {
 }
 
 
+def kill_all_chrome():
+    """Kill all running Chrome/Chromium processes to free memory."""
+    try:
+        subprocess.run(["pkill", "-9", "chromium"], capture_output=True)
+        subprocess.run(["pkill", "-9", "chrome"], capture_output=True)
+        subprocess.run(["pkill", "-9", "chromedriver"], capture_output=True)
+        time.sleep(1)
+    except Exception as e:
+        logger.debug(f"Error killing chrome processes: {e}")
+
+
 def get_chrome_driver(dark_mode: bool = False) -> webdriver.Chrome:
-    """Create and configure Chrome WebDriver."""
+    """Create and configure Chrome WebDriver with MINIMAL memory usage for RPi."""
+    # Kill any existing Chrome processes first
+    kill_all_chrome()
+
+    # Force garbage collection and wait
+    gc.collect()
+    time.sleep(2)
+
     options = Options()
-    options.add_argument("--headless")
+
+    # Essential headless options
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-infobars")
 
-    # Memory optimizations for low RAM systems (RPi)
-    options.add_argument("--single-process")
-    options.add_argument("--no-zygote")
+    # VERY small window = much less memory (will be scaled)
+    options.add_argument("--window-size=1024,600")
+
+    # AGGRESSIVE memory optimizations for Raspberry Pi with <1GB RAM
+    options.add_argument("--disable-gpu")
     options.add_argument("--disable-software-rasterizer")
+    options.add_argument("--disable-extensions")
     options.add_argument("--disable-plugins")
-    options.add_argument("--js-flags=--max-old-space-size=128")
-    options.add_argument("--renderer-process-limit=1")
+    options.add_argument("--single-process")  # Critical for low RAM
+    options.add_argument("--no-zygote")  # Critical for low RAM
     options.add_argument("--disable-background-networking")
     options.add_argument("--disable-default-apps")
     options.add_argument("--disable-sync")
     options.add_argument("--disable-translate")
+    options.add_argument("--disable-features=TranslateUI")
+    options.add_argument("--disable-features=VizDisplayCompositor")
+    options.add_argument("--disable-features=IsolateOrigins")
+    options.add_argument("--disable-site-isolation-trials")
     options.add_argument("--mute-audio")
     options.add_argument("--no-first-run")
     options.add_argument("--safebrowsing-disable-auto-update")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--disable-breakpad")
+    options.add_argument("--disable-component-update")
+    options.add_argument("--disable-domain-reliability")
+    options.add_argument("--disable-features=AudioServiceOutOfProcess")
+    options.add_argument("--disable-hang-monitor")
+    options.add_argument("--disable-ipc-flooding-protection")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-prompt-on-repost")
+    options.add_argument("--disable-renderer-backgrounding")
+    options.add_argument("--disable-backgrounding-occluded-windows")
+    options.add_argument("--disable-client-side-phishing-detection")
+    options.add_argument("--memory-pressure-off")
+    options.add_argument("--js-flags=--max-old-space-size=64")  # Very low JS heap
+    options.add_argument("--renderer-process-limit=1")
+    options.add_argument("--disable-accelerated-2d-canvas")
+    options.add_argument("--disable-accelerated-video-decode")
+    # NOTE: WebGL is REQUIRED for Unity-based EcoTrend site, don't disable it
+    options.add_argument("--disable-threaded-scrolling")
+    options.add_argument("--disable-threaded-animation")
+    options.add_argument("--num-raster-threads=1")
+    options.add_argument("--disable-low-res-tiling")
+
+    # User agent
+    options.add_argument("--user-agent=Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
     options.binary_location = "/usr/bin/chromium-browser"
 
@@ -87,10 +140,32 @@ def get_chrome_driver(dark_mode: bool = False) -> webdriver.Chrome:
         options.add_argument("--force-dark-mode")
 
     service = Service("/usr/bin/chromedriver")
-    driver = webdriver.Chrome(service=service, options=options)
-    driver.set_page_load_timeout(60)
 
-    return driver
+    try:
+        driver = webdriver.Chrome(service=service, options=options)
+        driver.set_page_load_timeout(120)  # Longer timeout for slow systems
+        driver.set_script_timeout(90)
+        return driver
+    except Exception as e:
+        logger.error(f"Failed to create Chrome driver: {e}")
+        kill_all_chrome()
+        gc.collect()
+        raise
+
+
+def safe_quit_driver(driver):
+    """Safely quit driver and clean up."""
+    if driver:
+        try:
+            driver.quit()
+        except Exception as e:
+            logger.debug(f"Error quitting driver: {e}")
+
+    # Kill any remaining processes
+    kill_all_chrome()
+
+    # Force garbage collection
+    gc.collect()
 
 
 def login_to_ecotrend(driver: webdriver.Chrome, username: str, password: str) -> bool:
@@ -99,13 +174,12 @@ def login_to_ecotrend(driver: webdriver.Chrome, username: str, password: str) ->
         logger.info("Navigating to EcoTrend...")
         driver.get(ECOTREND_URL)
 
-        # Wait for page to load (Unity WebGL takes time)
-        time.sleep(5)
+        # Wait for page to load
+        time.sleep(8)
 
-        # Wait for login form or already logged in state
         wait = WebDriverWait(driver, 30)
 
-        # Check if already logged in (look for authorized class)
+        # Check if already logged in
         try:
             driver.find_element(By.CSS_SELECTOR, ".itsecurity.authorized")
             logger.info("Already logged in")
@@ -113,17 +187,12 @@ def login_to_ecotrend(driver: webdriver.Chrome, username: str, password: str) ->
         except:
             pass
 
-        # Wait for Unity to load and show login
-        logger.info("Waiting for Unity to load...")
+        # Wait for Unity to load
+        logger.info("Waiting for login form...")
         time.sleep(10)
 
-        # Try to find and fill login form
-        # The login is inside Unity canvas, so we need to interact with it differently
-        # For Unity WebGL, we might need to use JavaScript injection
-
-        # Try finding input fields
+        # Try to find login form
         try:
-            # Look for standard HTML login form first
             username_field = wait.until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='text'], input[type='email'], input[name='username'], input[name='email']"))
             )
@@ -134,23 +203,19 @@ def login_to_ecotrend(driver: webdriver.Chrome, username: str, password: str) ->
             password_field.clear()
             password_field.send_keys(password)
 
-            # Find and click login button
             login_button = driver.find_element(By.CSS_SELECTOR, "button[type='submit'], input[type='submit'], .login-button, button")
             login_button.click()
 
-            time.sleep(5)
+            time.sleep(8)
             logger.info("Login submitted")
             return True
 
         except Exception as e:
             logger.warning(f"Standard login form not found: {e}")
 
-            # Unity WebGL login - try JavaScript approach
+            # Try Unity JavaScript login
             try:
-                # Wait for Unity instance
                 time.sleep(5)
-
-                # Try to send login via Unity SendMessage
                 js_login = f"""
                 if (typeof unityInstance !== 'undefined') {{
                     unityInstance.SendMessage('LoginManager', 'SetUsername', '{username}');
@@ -162,7 +227,6 @@ def login_to_ecotrend(driver: webdriver.Chrome, username: str, password: str) ->
                 time.sleep(10)
                 logger.info("Unity login attempted")
                 return True
-
             except Exception as e2:
                 logger.error(f"Unity login failed: {e2}")
                 return False
@@ -173,76 +237,46 @@ def login_to_ecotrend(driver: webdriver.Chrome, username: str, password: str) ->
 
 
 def select_view(driver: webdriver.Chrome, tab: str, interval: str, comparison: str) -> bool:
-    """Select the specified view (tab, interval, comparison)."""
+    """Select the specified view."""
     try:
-        wait = WebDriverWait(driver, 20)
-
-        # Wait for the page to be fully loaded
         time.sleep(3)
 
-        # Select tab (Teplo, Teplá voda, Studená voda)
         tab_text = TAB_MAPPING.get(tab, tab)
-        logger.info(f"Selecting tab: {tab_text}")
-
-        try:
-            # Find tab by text content
-            tab_element = driver.find_element(By.XPATH, f"//div[contains(@class, 'nav')]//div[contains(text(), '{tab_text}')] | //span[contains(text(), '{tab_text}')]/parent::div")
-            tab_element.click()
-            time.sleep(2)
-        except Exception as e:
-            logger.warning(f"Could not click tab via HTML: {e}, trying JavaScript...")
-            driver.execute_script(f"""
-                var tabs = document.querySelectorAll('.nav div, .active span');
-                tabs.forEach(function(t) {{
-                    if (t.textContent.includes('{tab_text}')) {{
-                        t.click();
-                    }}
-                }});
-            """)
-            time.sleep(2)
-
-        # Select interval (Dny, Týdny, Měsíce, Roky)
         interval_text = INTERVAL_MAPPING.get(interval, interval)
-        logger.info(f"Selecting interval: {interval_text}")
-
-        try:
-            interval_element = driver.find_element(By.XPATH, f"//div[contains(@class, 'interval') and contains(text(), '{interval_text}')] | //div[text()='{interval_text}']")
-            interval_element.click()
-            time.sleep(2)
-        except Exception as e:
-            logger.warning(f"Could not click interval via HTML: {e}, trying JavaScript...")
-            driver.execute_script(f"""
-                var intervals = document.querySelectorAll('.interval, div');
-                intervals.forEach(function(i) {{
-                    if (i.textContent.trim() === '{interval_text}') {{
-                        i.click();
-                    }}
-                }});
-            """)
-            time.sleep(2)
-
-        # Select comparison (Objekt, Minulý rok)
         comparison_text = COMPARISON_MAPPING.get(comparison, comparison)
-        logger.info(f"Selecting comparison: {comparison_text}")
 
-        try:
-            comparison_element = driver.find_element(By.XPATH, f"//h3[contains(text(), '{comparison_text}')]/parent::div | //div[contains(text(), '{comparison_text}')]")
-            comparison_element.click()
-            time.sleep(2)
-        except Exception as e:
-            logger.warning(f"Could not click comparison via HTML: {e}, trying JavaScript...")
-            driver.execute_script(f"""
-                var comparisons = document.querySelectorAll('h3, div');
-                comparisons.forEach(function(c) {{
-                    if (c.textContent.trim() === '{comparison_text}') {{
-                        c.click();
-                    }}
-                }});
-            """)
-            time.sleep(2)
+        logger.info(f"Selecting: {tab_text} / {interval_text} / {comparison_text}")
 
-        # Wait for chart to update
-        time.sleep(3)
+        # Try clicking via JavaScript (more reliable)
+        js_click = f"""
+        function clickByText(selector, text) {{
+            var elements = document.querySelectorAll(selector);
+            for (var i = 0; i < elements.length; i++) {{
+                if (elements[i].textContent.includes(text)) {{
+                    elements[i].click();
+                    return true;
+                }}
+            }}
+            return false;
+        }}
+
+        // Click tab
+        clickByText('div, span, button', '{tab_text}');
+
+        // Wait and click interval
+        setTimeout(function() {{
+            clickByText('div, span, button', '{interval_text}');
+        }}, 1000);
+
+        // Wait and click comparison
+        setTimeout(function() {{
+            clickByText('div, span, button, h3', '{comparison_text}');
+        }}, 2000);
+        """
+
+        driver.execute_script(js_click)
+        time.sleep(5)
+
         return True
 
     except Exception as e:
@@ -266,31 +300,23 @@ def apply_theme(driver: webdriver.Chrome, dark_mode: bool) -> None:
             """)
         time.sleep(1)
     except Exception as e:
-        logger.warning(f"Could not apply theme: {e}")
+        logger.debug(f"Could not apply theme: {e}")
 
 
-def capture_chart_screenshot(driver: webdriver.Chrome) -> Optional[bytes]:
-    """Capture screenshot of the chart area."""
+def capture_screenshot(driver: webdriver.Chrome) -> Optional[bytes]:
+    """Capture screenshot."""
     try:
-        # Try to find the chart/graph element
-        chart_selectors = [
-            ".graph",
-            "#chart",
-            ".dxc-chart",
-            "#overview-main-container",
-            ".container"
-        ]
-
-        for selector in chart_selectors:
+        # Try specific selectors first
+        for selector in [".graph", "#chart", ".dxc-chart", "#overview-main-container", ".container"]:
             try:
                 element = driver.find_element(By.CSS_SELECTOR, selector)
                 screenshot = element.screenshot_as_png
-                logger.info(f"Captured chart screenshot using selector: {selector}")
+                logger.info(f"Captured using selector: {selector}")
                 return screenshot
             except:
                 continue
 
-        # Fallback: capture full page
+        # Fallback to full page
         logger.info("Capturing full page screenshot")
         return driver.get_screenshot_as_png()
 
@@ -309,31 +335,34 @@ def take_screenshot(
 ) -> Optional[bytes]:
     """Take a screenshot of the specified EcoTrend view."""
     driver = None
+
     try:
-        logger.info(f"Taking screenshot: tab={tab}, interval={interval}, comparison={comparison}, dark={dark_mode}")
+        logger.info(f"Taking screenshot: tab={tab}, interval={interval}, comparison={comparison}")
+
+        # Extra cleanup before starting
+        gc.collect()
+        time.sleep(1)
 
         driver = get_chrome_driver(dark_mode)
 
-        # Login
         if not login_to_ecotrend(driver, username, password):
             logger.error("Login failed")
             return None
 
-        # Wait for dashboard to load
-        time.sleep(5)
+        # Give memory time to settle
+        gc.collect()
+        time.sleep(8)
 
-        # Apply theme
         apply_theme(driver, dark_mode)
 
-        # Select view
         if not select_view(driver, tab, interval, comparison):
-            logger.warning("View selection may have failed, trying to capture anyway")
+            logger.warning("View selection may have failed")
 
-        # Wait for content to render
-        time.sleep(3)
+        # Wait longer for chart to render on slow systems
+        time.sleep(5)
+        gc.collect()
 
-        # Capture screenshot
-        screenshot = capture_chart_screenshot(driver)
+        screenshot = capture_screenshot(driver)
 
         return screenshot
 
@@ -342,22 +371,31 @@ def take_screenshot(
         return None
 
     finally:
-        if driver:
-            try:
-                driver.quit()
-            except:
-                pass
+        safe_quit_driver(driver)
+        gc.collect()
+        time.sleep(2)  # Let memory settle before next request
 
 
 @app.route("/health", methods=["GET"])
 def health():
     """Health check endpoint."""
-    return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
+    return jsonify({
+        "status": "ok",
+        "timestamp": datetime.now().isoformat(),
+        "lock_available": not screenshot_lock.locked()
+    })
 
 
 @app.route("/screenshot", methods=["POST"])
 def screenshot():
     """Take a screenshot and return it."""
+    # Try to acquire lock without blocking
+    if not screenshot_lock.acquire(blocking=False):
+        logger.warning("Screenshot already in progress, request queued")
+        # Wait for lock with timeout
+        if not screenshot_lock.acquire(blocking=True, timeout=180):
+            return jsonify({"error": "Timeout waiting for previous screenshot to complete"}), 503
+
     try:
         data = request.get_json() or {}
 
@@ -381,7 +419,6 @@ def screenshot():
         )
 
         if image_data:
-            # Return as base64
             return jsonify({
                 "success": True,
                 "image": base64.b64encode(image_data).decode("utf-8"),
@@ -394,10 +431,16 @@ def screenshot():
         logger.exception("Screenshot endpoint error")
         return jsonify({"error": str(e)}), 500
 
+    finally:
+        screenshot_lock.release()
+
 
 @app.route("/screenshot/file", methods=["POST"])
 def screenshot_file():
-    """Take a screenshot and save to file, return path."""
+    """Take a screenshot and save to file."""
+    if not screenshot_lock.acquire(blocking=True, timeout=180):
+        return jsonify({"error": "Timeout waiting for previous screenshot"}), 503
+
     try:
         data = request.get_json() or {}
 
@@ -422,10 +465,8 @@ def screenshot_file():
         )
 
         if image_data:
-            # Ensure directory exists
             SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
-            # Generate filename if not provided
             if not filename:
                 filename = f"ecotrend_{tab}_{interval}_{comparison}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
 
@@ -448,10 +489,16 @@ def screenshot_file():
         logger.exception("Screenshot file endpoint error")
         return jsonify({"error": str(e)}), 500
 
+    finally:
+        screenshot_lock.release()
+
 
 @app.route("/screenshot/image", methods=["POST"])
 def screenshot_image():
     """Take a screenshot and return as image directly."""
+    if not screenshot_lock.acquire(blocking=True, timeout=180):
+        return jsonify({"error": "Timeout waiting for previous screenshot"}), 503
+
     try:
         data = request.get_json() or {}
 
@@ -486,7 +533,13 @@ def screenshot_image():
         logger.exception("Screenshot image endpoint error")
         return jsonify({"error": str(e)}), 500
 
+    finally:
+        screenshot_lock.release()
+
 
 if __name__ == "__main__":
-    logger.info("Starting EcoTrend Screenshot Server on port 5000...")
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Clean up any leftover Chrome processes on startup
+    kill_all_chrome()
+
+    logger.info("Starting Ista EcoTrend CZ Screenshot Server on port 5000...")
+    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)

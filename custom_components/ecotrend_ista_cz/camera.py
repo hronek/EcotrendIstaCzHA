@@ -125,6 +125,11 @@ class EcotrendCamera(Camera):
         """Run when entity about to be added to hass."""
         await super().async_added_to_hass()
 
+        # Register entity reference for service calls
+        self.hass.data[DOMAIN].setdefault("entities", {})
+        self.hass.data[DOMAIN]["entities"][self.entity_id] = self
+        _LOGGER.debug("Registered entity %s for refresh service", self.entity_id)
+
         # Schedule update at specific time
         if self._update_time:
             try:
@@ -150,6 +155,10 @@ class EcotrendCamera(Camera):
 
     async def async_will_remove_from_hass(self) -> None:
         """Run when entity will be removed from hass."""
+        # Unregister entity reference
+        if DOMAIN in self.hass.data and "entities" in self.hass.data[DOMAIN]:
+            self.hass.data[DOMAIN]["entities"].pop(self.entity_id, None)
+
         if self._unsub_time_change:
             self._unsub_time_change()
             self._unsub_time_change = None
