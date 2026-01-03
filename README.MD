@@ -44,6 +44,20 @@ Po konfiguraci se v postranním menu Home Assistant objeví nová položka. Klik
 
 Panel se načte pouze když na něj kliknete - nedochází k žádnému automatickému načítání nebo refreshi.
 
+### Vytvoření iframe karty na dashboardu
+
+Pokud chcete přidat Ista EcoTrend CZ přímo na váš dashboard jako kartu:
+
+1. Otevřete dashboard a klikněte na **Edit Dashboard**
+2. Klikněte na **Add Card**
+3. Vyberte **Webpage Card** (iframe)
+4. Nastavte:
+   - **URL**: `https://ecotrend.ista.cz/`
+   - **Aspect Ratio**: `16x9` nebo `1x1` (podle preference)
+5. Klikněte na **Save**
+
+**Poznámka**: Iframe karta se nenačte automaticky - obsah se načte až když na kartu kliknete nebo když se karta objeví ve viewportu.
+
 ## Podpora
 
 Pokud narazíte na problémy, vytvořte [issue na GitHubu](https://github.com/hronek/EcotrendIstaCzHA/issues).
