@@ -110,8 +110,17 @@ class EcotrendCamera(Camera):
         interval_name = INTERVALS.get(self._interval, self._interval)
         comparison_name = COMPARISONS.get(self._comparison, self._comparison)
 
+        # Unique ID always includes all values for uniqueness
         self._attr_unique_id = f"{DOMAIN}_{self._tab}_{self._interval}_{self._comparison}_{index}"
-        self._attr_name = f"EcoTrend {tab_name} {interval_name} {comparison_name}"
+
+        # Name only includes non-default values
+        # Default: interval=months, comparison=last_year
+        name_parts = ["EcoTrend", tab_name]
+        if self._interval != "months":
+            name_parts.append(interval_name)
+        if self._comparison != "last_year":
+            name_parts.append(comparison_name)
+        self._attr_name = " ".join(name_parts)
 
         # Image data
         self._image: bytes | None = None
