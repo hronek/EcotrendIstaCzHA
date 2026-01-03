@@ -2,90 +2,34 @@
   "config": {
     "step": {
       "user": {
-        "title": "Ista EcoTrend CZ - Credentials",
-        "description": "Enter your Ista EcoTrend login credentials.\n\nMake sure the Ista EcoTrend CZ Screenshot addon is installed and running. The addon will be discovered automatically.",
+        "title": "ista EcoTrend CZ",
+        "description": "Set up ista EcoTrend CZ panel to view your consumption data.",
         "data": {
-          "username": "Username (Ista EcoTrend)",
-          "password": "Password",
-          "addon_port": "Screenshot addon port (advanced)",
-          "panel_title": "Sidebar panel title",
-          "panel_icon": "Sidebar panel icon"
-        }
-      },
-      "cameras": {
-        "title": "Add Camera",
-        "description": "Configure which chart to display. You have added {camera_count} camera(s) so far.",
-        "data": {
-          "tab": "Data type",
-          "interval": "Time interval",
-          "comparison": "Comparison mode",
-          "theme": "Theme",
-          "update_interval": "Update interval (minutes)",
-          "update_time": "Daily update time"
-        }
-      },
-      "add_more": {
-        "title": "Add Another Camera?",
-        "description": "You have configured {camera_count} camera(s). Would you like to add another?",
-        "data": {
-          "add_another": "Add another camera"
+          "url": "URL",
+          "panel_title": "Panel Title",
+          "panel_icon": "Panel Icon"
+        },
+        "data_description": {
+          "url": "The URL to the ista EcoTrend CZ website",
+          "panel_title": "The title shown in the sidebar",
+          "panel_icon": "The icon shown in the sidebar (e.g., mdi:water-thermometer)"
         }
       }
     },
-    "error": {
-      "addon_not_found": "Ista EcoTrend CZ Screenshot addon not found. Please install it from the Add-on Store first.",
-      "addon_not_running": "Ista EcoTrend CZ Screenshot addon is not running. Please start the addon and try again.",
-      "addon_not_available": "Cannot connect to the Ista EcoTrend CZ Screenshot addon. Make sure it is installed and running.",
-      "invalid_comparison": "Invalid comparison type for selected data type. Cold water only supports 'Last year' comparison."
-    },
     "abort": {
-      "already_configured": "This integration is already configured."
+      "already_configured": "ista EcoTrend CZ is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Ista EcoTrend CZ Options",
-        "menu_options": {
-          "credentials": "Edit credentials",
-          "cameras": "Remove cameras",
-          "add_camera": "Add new camera"
-        }
-      },
-      "credentials": {
-        "title": "Edit Credentials",
+        "title": "ista EcoTrend CZ Options",
         "data": {
-          "username": "Username (Ista EcoTrend)",
-          "password": "Password",
-          "addon_port": "Screenshot addon port (advanced)",
-          "panel_title": "Sidebar panel title",
-          "panel_icon": "Sidebar panel icon"
-        }
-      },
-      "cameras": {
-        "title": "Remove Camera",
-        "description": "Select a camera to remove.",
-        "data": {
-          "camera_select": "Select camera to remove"
-        }
-      },
-      "add_camera": {
-        "title": "Add New Camera",
-        "data": {
-          "tab": "Data type",
-          "interval": "Time interval",
-          "comparison": "Comparison mode",
-          "theme": "Theme",
-          "update_interval": "Update interval (minutes)",
-          "update_time": "Daily update time"
+          "url": "URL",
+          "panel_title": "Panel Title",
+          "panel_icon": "Panel Icon"
         }
       }
-    },
-    "error": {
-      "invalid_comparison": "Invalid comparison type for selected data type."
-    },
-    "abort": {
-      "no_cameras": "No cameras configured."
     }
   }
 }

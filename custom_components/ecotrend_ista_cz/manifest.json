@@ -1,12 +1,12 @@
 {
   "domain": "ecotrend_ista_cz",
-  "name": "Ista EcoTrend CZ",
+  "name": "ista EcoTrend CZ",
   "codeowners": ["@hronek"],
   "config_flow": true,
   "documentation": "https://github.com/hronek/EcotrendIstaCzHA",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/hronek/EcotrendIstaCzHA/issues",
-  "requirements": ["aiohttp>=3.8.0"],
-  "version": "3.0.0"
+  "requirements": [],
+  "version": "1.0.0"
 }

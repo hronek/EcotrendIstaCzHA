@@ -2,90 +2,34 @@
   "config": {
     "step": {
       "user": {
-        "title": "Ista EcoTrend CZ - Přihlašovací údaje",
-        "description": "Zadejte přihlašovací údaje k Ista EcoTrend.\n\nUjistěte se, že addon Ista EcoTrend CZ Screenshot je nainstalován a běží. Addon bude nalezen automaticky.",
+        "title": "ista EcoTrend CZ",
+        "description": "Nastavte panel ista EcoTrend CZ pro zobrazení dat o spotřebě.",
         "data": {
-          "username": "Uživatelské jméno (Ista EcoTrend)",
-          "password": "Heslo",
-          "addon_port": "Port screenshot addonu (pokročilé)",
-          "panel_title": "Název panelu v postranním menu",
-          "panel_icon": "Ikona panelu v postranním menu"
-        }
-      },
-      "cameras": {
-        "title": "Přidat kameru",
-        "description": "Nastavte, který graf se má zobrazovat. Zatím jste přidali {camera_count} kamer(u/y).",
-        "data": {
-          "tab": "Typ dat",
-          "interval": "Časový interval",
-          "comparison": "Režim porovnání",
-          "theme": "Téma",
-          "update_interval": "Interval aktualizace (minuty)",
-          "update_time": "Čas denní aktualizace"
-        }
-      },
-      "add_more": {
-        "title": "Přidat další kameru?",
-        "description": "Nakonfigurovali jste {camera_count} kamer(u/y). Chcete přidat další?",
-        "data": {
-          "add_another": "Přidat další kameru"
+          "url": "URL adresa",
+          "panel_title": "Název panelu",
+          "panel_icon": "Ikona panelu"
+        },
+        "data_description": {
+          "url": "URL adresa webu ista EcoTrend CZ",
+          "panel_title": "Název zobrazený v postranním menu",
+          "panel_icon": "Ikona v postranním menu (např. mdi:water-thermometer)"
         }
       }
     },
-    "error": {
-      "addon_not_found": "Addon Ista EcoTrend CZ Screenshot nebyl nalezen. Nejprve jej nainstalujte z obchodu s doplňky.",
-      "addon_not_running": "Addon Ista EcoTrend CZ Screenshot neběží. Spusťte addon a zkuste to znovu.",
-      "addon_not_available": "Nelze se připojit k addonu Ista EcoTrend CZ Screenshot. Ujistěte se, že je nainstalován a běží.",
-      "invalid_comparison": "Neplatný typ porovnání pro vybraný typ dat. Studená voda podporuje pouze porovnání 'Minulý rok'."
-    },
     "abort": {
-      "already_configured": "Tato integrace je již nakonfigurována."
+      "already_configured": "ista EcoTrend CZ je již nakonfigurován."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Ista EcoTrend CZ - Možnosti",
-        "menu_options": {
-          "credentials": "Upravit přihlašovací údaje",
-          "cameras": "Odebrat kamery",
-          "add_camera": "Přidat novou kameru"
-        }
-      },
-      "credentials": {
-        "title": "Upravit přihlašovací údaje",
+        "title": "Nastavení ista EcoTrend CZ",
         "data": {
-          "username": "Uživatelské jméno (Ista EcoTrend)",
-          "password": "Heslo",
-          "addon_port": "Port screenshot addonu (pokročilé)",
-          "panel_title": "Název panelu v postranním menu",
-          "panel_icon": "Ikona panelu v postranním menu"
-        }
-      },
-      "cameras": {
-        "title": "Odebrat kameru",
-        "description": "Vyberte kameru k odebrání.",
-        "data": {
-          "camera_select": "Vyberte kameru k odebrání"
-        }
-      },
-      "add_camera": {
-        "title": "Přidat novou kameru",
-        "data": {
-          "tab": "Typ dat",
-          "interval": "Časový interval",
-          "comparison": "Režim porovnání",
-          "theme": "Téma",
-          "update_interval": "Interval aktualizace (minuty)",
-          "update_time": "Čas denní aktualizace"
+          "url": "URL adresa",
+          "panel_title": "Název panelu",
+          "panel_icon": "Ikona panelu"
         }
       }
-    },
-    "error": {
-      "invalid_comparison": "Neplatný typ porovnání pro vybraný typ dat."
-    },
-    "abort": {
-      "no_cameras": "Žádné kamery nejsou nakonfigurovány."
     }
   }
 }
